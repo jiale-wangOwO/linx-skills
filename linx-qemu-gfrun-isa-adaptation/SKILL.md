@@ -317,6 +317,41 @@ golden provenance/hash, model commands and hashes, first mismatch or trap, and
 the exact next action. Update audit markdown with source indexes; do not hide
 uncertainty behind a broad `UNSUPPORTED` label.
 
+## Reusable adaptation lessons
+
+- Audit the carrier against the newest ASL/ADR before auditing the model. A
+  carrier with an old function number, barrier, `B.DIM` interpretation, Shared
+  range, or result shape can fail in both models and still be the wrong test.
+  Retire it from the active manifest inventory, preserve it as migration
+  material, and create a current-encoding carrier when semantics are clear.
+- Keep architectural execution independent from the test terminator. Each
+  instruction reads architectural state, computes, and publishes its own
+  result. A cooperative test may wait before the final finisher so already
+  retired stores are observable, but that wait must not become an artificial
+  instruction-to-instruction semantic dependency or hidden-state merge.
+- Audit every variant through decoder, operand roles, legality gate, execution,
+  publication, and golden. Shared flags often cover the base operation while
+  omitting a sibling such as `TGEMVMX_BIAS` or `TGEMVMX_ACC`; maintain a variant
+  matrix and run a focused case for each enabled ACC/BIAS/MX postprocess path.
+- Keep source binding and payload geometry distinct. B.IOT hand/rank is an
+  architectural selector; physical Tile IDs are allocation details. Shared
+  parent capacity, per-writer range, valid logical extent, CELL count, and
+  layout are separate fields. Never infer logical shape from padding capacity.
+- Use independent evidence for status updates. Decoder registration, a passing
+  finisher, model agreement, and an old prebuilt pass list do not establish a
+  semantic PASS. Promote only the exact current dtype/layout/storage/shape/
+  attribute profile whose ELF and independent golden were rerun on both models.
+- On a release transition, update manifest provenance, snapshot identity,
+  evidence, status JSON, and workbooks as one reviewable unit. If only one
+  profile was rerun, add/update that profile without deleting unrelated
+  provenance; validate workbook ZIP/XML output afterward.
+- Use a small representative batch before an ISA-wide run: one Local case, one
+  Shared case, one ACC/BIAS or MX-scale variant, and one negative legality case.
+  This catches operand-order and metadata errors before an expensive full run.
+- Keep QEMU and gfrun fixes independently reviewable. Record exact model heads,
+  rebuild the ELF after carrier edits, and never claim final parity from a run
+  that started before the last source or binary change.
+
 ## 10. Final Gates
 
 Before handoff or a commit in either leaf repository, run the focused unit tests,
